@@ -364,17 +364,17 @@
 
         <nav aria-label="Nawigacja">
           <a href="#uslugi">Usługi</a>
-          <a href="#proces">Proces</a>
+          <a href="#proces" id="navProcess">Proces</a>
           <a href="#wyniki">Wyniki</a>
-          <a href="#o-mnie">O mnie</a>
-          <a href="#kontakt">Kontakt</a>
+          <a href="#o-mnie" id="navAbout">O mnie</a>
+          <a href="#kontakt" id="navContact">Kontakt</a>
         </nav>
 
         <div class="header-actions">
   <div class="lang" id="langToggle" title="Przełącz język / Switch language">
     <span>PL</span> <span class="lang-sep">/</span> <strong id="langLabel">EN</strong>
   </div>
-  <a class="btn" href="#kontakt">Bezpłatna konsultacja</a>
+  <a class="btn" id="btnFreeTop" href="#kontakt">Bezpłatna konsultacja</a>
 </div>
       </div>
     </div>
@@ -664,9 +664,9 @@ It is a strategic instrument.">
         <div class="card contact">
           <form id="contactForm">
             <div class="form-row">
-              <input type="text" id="name" placeholder="Imię i nazwisko" required
+              <input type="text" id="name" placeholder="Imię i nazwisko" data-i18n-placeholder="name" required
                      data-pl-ph="Imię i nazwisko" data-en-ph="Full name"/>
-              <input type="email" id="email" placeholder="Email" required
+              <input type="email" id="email" placeholder="Email" data-i18n-placeholder="email" required
                      data-pl-ph="Email" data-en-ph="Email"/>
             </div>
             <div class="form-row">
@@ -675,7 +675,7 @@ It is a strategic instrument.">
               <input type="text" id="phone" placeholder="Telefon (opcjonalnie)"
                      data-pl-ph="Telefon (opcjonalnie)" data-en-ph="Phone (optional)"/>
             </div>
-            <textarea id="message" placeholder="Wiadomość"
+            <textarea id="message" placeholder="Wiadomość" data-i18n-placeholder="message"
                       data-pl-ph="Wiadomość" data-en-ph="Message" required></textarea>
             <button class="btn" type="submit" data-pl="Wyślij email" data-en="Send email">Wyślij email</button>
             <div class="note" data-pl="Formularz otworzy Twoją aplikację pocztową (mailto). Możesz też wpisać kontakt poniżej."
@@ -716,8 +716,7 @@ It is a strategic instrument.">
         <div class="thin" style="text-align:right">
           <div data-pl="© <span id='year'></span> CAPOZZA. Wszelkie prawa zastrzeżone."
                data-en="© <span id='year'></span> CAPOZZA. All rights reserved.">
-            © <span id="year"></span> ALEXANDER CAPOZZA. Wszelkie prawa zastrzeżone.
-          </div>
+            <span id="footerCopy">© 2026 ALEXANDER CAPOZZA. Wszelkie prawa zastrzeżone.</span></div>
           <div style="opacity:.8" data-pl=""
                data-en="">
             
@@ -727,59 +726,67 @@ It is a strategic instrument.">
     </footer>
   </main>
 
-  <script>
-    // Smooth scroll for internal anchors
-    document.querySelectorAll('a[href^="#"]').forEach(a => {
-      a.addEventListener('click', (e) => {
-        const id = a.getAttribute('href');
-        const el = document.querySelector(id);
-        if(!el) return;
-        e.preventDefault();
-        el.scrollIntoView({behavior:'smooth', block:'start'});
-      });
+  
+
+
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const toggle = document.getElementById("langToggle");
+  const label  = document.getElementById("langLabel");
+  const left   = document.getElementById("langLeft");
+
+  const apply = (lang) => {
+    // Swap all text nodes that have both data-pl and data-en
+    document.querySelectorAll("[data-pl][data-en]").forEach((el) => {
+      const val = (lang === "en") ? el.getAttribute("data-en") : el.getAttribute("data-pl");
+      if (val !== null) el.textContent = val;
     });
 
-    // Year
-    const yearEl = document.getElementById('year');
-    if (yearEl) yearEl.textContent = new Date().getFullYear();
+    // Placeholders
+    document.querySelectorAll("[data-pl-ph][data-en-ph]").forEach((el) => {
+      const ph = (lang === "en") ? el.getAttribute("data-en-ph") : el.getAttribute("data-pl-ph");
+      if (ph !== null) el.setAttribute("placeholder", ph);
+    });
 
-    // Language toggle (PL/EN) - swaps text based on data attributes
-    let isEN = false;
-    const toggle = document.getElementById('langToggle');
-    const label = document.getElementById('langLabel');
-
-    function applyLang(){
-      document.querySelectorAll('[data-pl][data-en]').forEach(el => {
-        el.textContent = isEN ? el.getAttribute('data-en') : el.getAttribute('data-pl');
-      });
-      document.querySelectorAll('[data-pl-ph][data-en-ph]').forEach(el => {
-        el.placeholder = isEN ? el.getAttribute('data-en-ph') : el.getAttribute('data-pl-ph');
-      });
-      label.textContent = isEN ? 'PL' : 'EN';
+    // Visual toggle label (shows current / other)
+    if (left && label) {
+      if (lang === "pl") { left.textContent = "PL"; label.textContent = "EN"; }
+      else { left.textContent = "EN"; label.textContent = "PL"; }
     }
-    if (toggle && label) toggle.addEventListener('click', () => {
-      isEN = !isEN;
-      applyLang();
-    });
-    if (toggle && label) applyLang();
 
-    // Contact form -> mailto
-    // TODO: Replace CONTACT_EMAIL with your real email.
-    const CONTACT_EMAIL = "a.capozza@yahoo.co.uk";
-    document.getElementById('contactForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const company = document.getElementById('company').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const msg = document.getElementById('message').value.trim();
+    // Persist + set <html lang="">
+    try { localStorage.setItem("capozza_lang", lang); } catch (e) {}
+    document.documentElement.setAttribute("lang", lang);
+  };
 
-      const subject = encodeURIComponent("Zapytanie — CAPOZZA (www)");
-      const body = encodeURIComponent(
-        `Imię: ${name}\nEmail: ${email}\nFirma: ${company}\nTelefon: ${phone}\n\nWiadomość:\n${msg}\n`
-      );
-      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+  // Init language: saved -> browser preference -> pl
+  let lang = "pl";
+  try {
+    const saved = localStorage.getItem("capozza_lang");
+    if (saved === "pl" || saved === "en") lang = saved;
+    else {
+      const pref = (navigator.language || "").toLowerCase();
+      if (pref.startsWith("en")) lang = "en";
+    }
+  } catch (e) {}
+
+  apply(lang);
+
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      lang = (lang === "pl") ? "en" : "pl";
+      apply(lang);
     });
-  </script>
+  }
+
+});
+</script>
+
 </body>
 </html>
