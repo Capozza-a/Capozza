@@ -731,7 +731,115 @@ It is a strategic instrument.">
 
 
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const i18n = {
+  "pl": {
+    "navOffer": "Oferta",
+    "navProcess": "Proces",
+    "navAbout": "O mnie",
+    "navContact": "Kontakt",
+    "btnFreeTop": "Bezpłatna konsultacja",
+    "heroH1": "Strategia kulinarna i architektura menu",
+    "heroSub": "Konsulting gastronomiczny: menu engineering, operacje kuchni, szkolenia i wdrożenia.",
+    "btnHeroPrimary": "Umów audyt",
+    "btnHeroSecondary": "Zobacz ofertę",
+    "h2Offer": "Oferta",
+    "h2Process": "Proces",
+    "h2About": "O mnie",
+    "h2Contact": "Kontakt",
+    "placeholders": {
+      "name": "Imię i nazwisko",
+      "email": "Email",
+      "message": "Wiadomość"
+    },
+    "btnSend": "Wyślij",
+    "footerCopy": "© 2026 ALEXANDER CAPOZZA. Wszelkie prawa zastrzeżone."
+  },
+  "en": {
+    "navOffer": "Services",
+    "navProcess": "Process",
+    "navAbout": "About",
+    "navContact": "Contact",
+    "btnFreeTop": "Free consultation",
+    "heroH1": "Culinary strategy & menu architecture",
+    "heroSub": "Hospitality consulting: menu engineering, kitchen operations, training and implementation.",
+    "btnHeroPrimary": "Book an audit",
+    "btnHeroSecondary": "View services",
+    "h2Offer": "Services",
+    "h2Process": "Process",
+    "h2About": "About",
+    "h2Contact": "Contact",
+    "placeholders": {
+      "name": "Full name",
+      "email": "Email",
+      "message": "Message"
+    },
+    "btnSend": "Send",
+    "footerCopy": "© 2026 ALEXANDER CAPOZZA. All rights reserved."
+  }
+};
 
+  const toggle = document.getElementById("langToggle");
+  const label = document.getElementById("langLabel");
+  const left = document.getElementById("langLeft");
+
+  const setText = (id, value) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = value;
+  };
+
+  const setPlaceholders = (lang) => {
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+      const key = el.getAttribute("data-i18n-placeholder");
+      const val = i18n[lang]?.placeholders?.[key];
+      if (val) el.setAttribute("placeholder", val);
+    });
+  };
+
+  const apply = (lang) => {
+    const dict = i18n[lang];
+    if (!dict) return;
+
+    Object.keys(dict).forEach((k) => {
+      if (k === "placeholders") return;
+      if (typeof dict[k] === "string") setText(k, dict[k]);
+    });
+
+    setPlaceholders(lang);
+
+    // toggle visual
+    if (left && label) {
+      if (lang === "pl") { left.textContent = "PL"; label.textContent = "EN"; }
+      else { left.textContent = "EN"; label.textContent = "PL"; }
+    }
+
+    // persist + html lang
+    try { localStorage.setItem("capozza_lang", lang); } catch(e){}
+    document.documentElement.setAttribute("lang", lang);
+  };
+
+  let lang = "pl";
+  try {
+    const saved = localStorage.getItem("capozza_lang");
+    if (saved) lang = saved;
+    else {
+      const pref = (navigator.language || "").toLowerCase();
+      if (pref.startsWith("en")) lang = "en";
+    }
+  } catch(e){}
+
+  apply(lang);
+
+  if (toggle) {
+    toggle.addEventListener("click", () => {
+      lang = (lang === "pl") ? "en" : "pl";
+      apply(lang);
+    });
+  }
+});
+</script>
 
 
 <script>
@@ -742,30 +850,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const left   = document.getElementById("langLeft");
 
   const apply = (lang) => {
-    // Swap all text nodes that have both data-pl and data-en
+
     document.querySelectorAll("[data-pl][data-en]").forEach((el) => {
       const val = (lang === "en") ? el.getAttribute("data-en") : el.getAttribute("data-pl");
       if (val !== null) el.textContent = val;
     });
 
-    // Placeholders
     document.querySelectorAll("[data-pl-ph][data-en-ph]").forEach((el) => {
       const ph = (lang === "en") ? el.getAttribute("data-en-ph") : el.getAttribute("data-pl-ph");
       if (ph !== null) el.setAttribute("placeholder", ph);
     });
 
-    // Visual toggle label (shows current / other)
     if (left && label) {
       if (lang === "pl") { left.textContent = "PL"; label.textContent = "EN"; }
       else { left.textContent = "EN"; label.textContent = "PL"; }
     }
 
-    // Persist + set <html lang="">
-    try { localStorage.setItem("capozza_lang", lang); } catch (e) {}
+    try { localStorage.setItem("capozza_lang", lang); } catch(e) {}
     document.documentElement.setAttribute("lang", lang);
   };
 
-  // Init language: saved -> browser preference -> pl
   let lang = "pl";
   try {
     const saved = localStorage.getItem("capozza_lang");
@@ -774,7 +878,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const pref = (navigator.language || "").toLowerCase();
       if (pref.startsWith("en")) lang = "en";
     }
-  } catch (e) {}
+  } catch(e) {}
 
   apply(lang);
 
